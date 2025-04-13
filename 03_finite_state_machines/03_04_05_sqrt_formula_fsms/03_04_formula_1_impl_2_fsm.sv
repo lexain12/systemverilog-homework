@@ -42,4 +42,96 @@ module formula_1_impl_2_fsm
     // You can download this issue from https://fpga-systems.ru/fsm
 
 
+    enum logic [2:0] {
+        idle,
+        calc_ab,
+        wait_ab,
+        calc_c,
+        wait_c,
+        done
+    } 
+    state, new_state;
+
+    logic [31:0] a_reg,  b_reg,  c_reg;
+    logic [15:0] a_sqrt, b_sqrt, c_sqrt;
+
+    always_comb 
+    begin
+        new_state = state;
+
+        res_vld = 0;
+        res = 0;
+        isqrt_1_x_vld = 0;
+        isqrt_2_x_vld = 0;
+        isqrt_1_x = 0;
+        isqrt_2_x = 0;
+
+        case (state)
+            idle: 
+            begin
+                if (arg_vld) 
+                    new_state = calc_ab;
+            end
+
+            calc_ab: 
+            begin
+                isqrt_1_x_vld = 1;
+                isqrt_1_x = a_reg;
+                isqrt_2_x_vld = 1;
+                isqrt_2_x = b_reg;
+                new_state = wait_ab;
+            end
+
+            wait_ab: 
+                if (isqrt_1_y_vld && isqrt_2_y_vld) 
+                    new_state = calc_c;
+
+            calc_c: 
+            begin
+                isqrt_1_x_vld = 1;
+                isqrt_1_x = c_reg;
+                new_state = wait_c;
+            end
+
+            wait_c: 
+                if (isqrt_1_y_vld) 
+                    new_state = done;
+
+            done: 
+            begin
+                res_vld = 1;
+                res = a_sqrt + b_sqrt + c_sqrt;
+                new_state = idle;
+            end
+        endcase
+    end
+
+
+    always_ff @(posedge clk) 
+    begin
+        if (rst)
+            state <= idle;
+        else
+            state <= new_state;
+
+        if (arg_vld && state == idle) 
+        begin
+            a_reg <= a;
+            b_reg <= b;
+            c_reg <= c;
+        end
+
+        if (state == wait_ab) 
+        begin
+            if (isqrt_1_y_vld) 
+                a_sqrt <= isqrt_1_y;
+            if (isqrt_2_y_vld) 
+                b_sqrt <= isqrt_2_y;
+        end
+
+        if (state == wait_c && isqrt_1_y_vld) 
+            c_sqrt <= isqrt_1_y;
+    end
+
+
 endmodule
