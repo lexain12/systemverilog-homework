@@ -41,6 +41,41 @@ module formula_1_pipe
     // in the article by Yuri Panchul published in
     // FPGA-Systems Magazine :: FSM :: Issue ALFA (state_0)
     // You can download this issue from https://fpga-systems.ru/fsm#state_0
+    logic [2:0] isqrt_out_valid;
+    logic [31:0] isqrt_a;
+    logic [31:0] isqrt_b;
+    logic [31:0] isqrt_c;
 
+    isqrt # (.n_pipe_stages (4)) i_isqrt_a
+    (
+        .clk   ( clk         ),
+        .rst   ( rst         ),
+        .x_vld ( arg_vld),
+        .x     ( a),
+        .y_vld ( isqrt_out_valid[0]),
+        .y     ( isqrt_a     )
+    );
+
+    isqrt # (.n_pipe_stages (4)) i_isqrt_b
+    (
+        .clk   ( clk         ),
+        .rst   ( rst         ),
+        .x_vld ( arg_vld),
+        .x     ( b),
+        .y_vld ( isqrt_out_valid[1]),
+        .y     ( isqrt_b     )
+    );
+    isqrt # (.n_pipe_stages (4)) i_isqrt_c
+    (
+        .clk   ( clk         ),
+        .rst   ( rst         ),
+        .x_vld ( arg_vld),
+        .x     ( c),
+        .y_vld ( isqrt_out_valid[2]),
+        .y     ( isqrt_c     )
+    );
+
+    assign res_vld = isqrt_out_valid[0];
+    assign res = isqrt_a + isqrt_b + isqrt_c;
 
 endmodule
