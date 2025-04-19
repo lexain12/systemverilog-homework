@@ -30,5 +30,6 @@ module put_in_order
     // The idea of the block is kinda similar to the "parallel_to_serial" block
     // from Homework 2, but here block should also preserve the output order.
 
+    // Реально не успеваю уже ахахах, сегодня был на хакатоне. Мы там кстати реально прикольную штуку делаем.
 
 endmodule
